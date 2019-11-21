@@ -18,10 +18,11 @@ class QR extends StatefulWidget {
 class _QRState extends State<QR> {
 
   NumberPicker integerNumberPicker;
-  int curreIntValue = 0; //updates on selection of new value
+  static int currentIntValue = 0; //updates on selection of new value
 
 
   final scanPass = "http://dev-api.orlemyouthweek.in/scan_pass";
+  final acceptPass = "http://dev-api.orlemyouthweek.in/accept_pass";
 
   qrScan() async{
     var scannedQr = await FlutterBarcodeScanner.scanBarcode("#ff6666", 'Cancel', true, ScanMode.DEFAULT);
@@ -42,8 +43,44 @@ class _QRState extends State<QR> {
 
   }
 
-  void confirmBox(maxValue) async{
-    await showDialog(
+  pickQrQty(maxValue) async{
+    currentIntValue = 0;
+    await showDialog<int>(
+      context: context,
+      builder: (BuildContext context){
+        return NumberPickerDialog.integer(
+          minValue: 0,
+          maxValue: maxValue,
+          initialIntegerValue: 0,
+        );
+      }
+    ).then((num value){
+      if(value != null){
+        setState(() {
+          currentIntValue = value;
+        });
+        integerNumberPicker.animateInt(currentIntValue);
+      }
+    });
+  }
+
+  submitQty(selectQty, phone, type, token) async{
+    var response = await http.post(
+      acceptPass,
+      body: {
+        'type': type,
+        'phone': phone,
+        'qty': currentIntValue
+      },
+      headers: {
+        'token': token
+      }
+    );
+    return response;
+  }
+
+  void confirmBox(maxValue, phone, type, token) {
+    showDialog(
       context: context,
       builder: (BuildContext context){
         return AlertDialog(
@@ -61,10 +98,62 @@ class _QRState extends State<QR> {
                         ),
                       ),
                       SizedBox(
-                        height: 15.0,
+                        height: 75.0,
                       ),
                       //Pass redemption selection
+                      Text(
+                        'Phone Number: ' + phone,
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
+                      ),
+                      SizedBox(height: 35.0),
+                      Text(
+                        'Type: ' + type,
+                        style: TextStyle(
+                          fontSize: 20
+                        ),
+                      ),
 
+                      SizedBox(height: 40),
+
+                      RaisedButton(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          side: BorderSide(color: Colors.lightBlue)
+                        ),
+                        color: Colors.lightBlue,
+                        onPressed: (){
+                          pickQrQty(maxValue);
+                        },
+
+                        child: Text('Number of passes $currentIntValue'),
+                        
+                      ),
+
+                      SizedBox(height: 50),
+
+                      RaisedButton(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          side: BorderSide(color: Colors.lightBlue)
+                        ),
+                        color: Colors.lightBlue,
+                        child: Text(
+                          'Redeem Passes'
+                        ),
+                        onPressed: () async{
+                          print("gdxgxgxxfdxdfxdx");
+                          var response = await submitQty(currentIntValue, phone, type, token);
+                      
+                          if(response.statusCode == 200){
+                            print('success');
+                          }
+                          else{
+                            print('Please don\'t');
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -125,8 +214,9 @@ class _QRState extends State<QR> {
                   if(response.statusCode == 200){
                     var jsonrresponse = await json.decode(response.body);
                     Map<String, dynamic> data = jsonrresponse['data'];
-                    print(data['phone']);
-                    confirmBox(data['qty']);
+                    print(data);
+                    confirmBox(data['qty'], data['phone'], data['type'], token);
+                    
                   }
                 }
 
