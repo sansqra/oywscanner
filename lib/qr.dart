@@ -8,9 +8,13 @@ import 'dart:convert';
 import 'package:numberpicker/numberpicker.dart';
 
 
+
+final scanPass = "http://dev-api.orlemyouthweek.in/scan_pass";
+final acceptPass = "http://dev-api.orlemyouthweek.in/accept_pass";
+
+
 class QR extends StatefulWidget {
   @override
-  
   _QRState createState() => _QRState();
 }
 
@@ -18,12 +22,8 @@ class QR extends StatefulWidget {
 class _QRState extends State<QR> {
 
   NumberPicker integerNumberPicker;
-  static int currentIntValue = 0; //updates on selection of new value
-
-
-  final scanPass = "http://dev-api.orlemyouthweek.in/scan_pass";
-  final acceptPass = "http://dev-api.orlemyouthweek.in/accept_pass";
-
+  int counter = 0;
+ 
   qrScan() async{
     var scannedQr = await FlutterBarcodeScanner.scanBarcode("#ff6666", 'Cancel', true, ScanMode.DEFAULT);
     return scannedQr;
@@ -43,127 +43,179 @@ class _QRState extends State<QR> {
 
   }
 
-  pickQrQty(maxValue) async{
-    currentIntValue = 0;
-    await showDialog<int>(
-      context: context,
-      builder: (BuildContext context){
-        return NumberPickerDialog.integer(
-          minValue: 0,
-          maxValue: maxValue,
-          initialIntegerValue: 0,
-        );
-      }
-    ).then((num value){
-      if(value != null){
-        setState(() {
-          currentIntValue = value;
-        });
-        integerNumberPicker.animateInt(currentIntValue);
-      }
-    });
-  }
-
-  submitQty(selectQty, phone, type, token) async{
-    var response = await http.post(
+  submitQty(type, phone, qty, token) async{
+    await http.post(
       acceptPass,
       body: {
         'type': type,
         'phone': phone,
-        'qty': currentIntValue
+        'qty': qty 
       },
       headers: {
         'token': token
       }
-    );
-    return response;
+    ).then((response){
+        print('Have reached the .then of confirm. Status code:' + (response.statusCode as String));
+        return response;
+      }
+    ).catchError((ex){
+      print(ex);
+    });
+    
   }
 
-  void confirmBox(maxValue, phone, type, token) {
+
+
+  void _invalidQR(){
     showDialog(
       context: context,
       builder: (BuildContext context){
         return AlertDialog(
-          content: Form(
-            child: Column(
-              children: <Widget>[
-                Center(
-                  child: Column(
-                    children: <Widget>[
-                      //title
-                      Text(
-                        'Valid QR',
-                        style: TextStyle(
-                          fontSize: 20
-                        ),
-                      ),
-                      SizedBox(
-                        height: 75.0,
-                      ),
-                      //Pass redemption selection
-                      Text(
-                        'Phone Number: ' + phone,
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                      SizedBox(height: 35.0),
-                      Text(
-                        'Type: ' + type,
-                        style: TextStyle(
-                          fontSize: 20
-                        ),
-                      ),
+            title: Text('Invalid QR'),
+            content: Text('Please Scan a valid OYW QR Pass'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
 
-                      SizedBox(height: 40),
-
-                      RaisedButton(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          side: BorderSide(color: Colors.lightBlue)
-                        ),
-                        color: Colors.lightBlue,
-                        onPressed: (){
-                          pickQrQty(maxValue);
-                        },
-
-                        child: Text('Number of passes $currentIntValue'),
-                        
-                      ),
-
-                      SizedBox(height: 50),
-
-                      RaisedButton(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          side: BorderSide(color: Colors.lightBlue)
-                        ),
-                        color: Colors.lightBlue,
-                        child: Text(
-                          'Redeem Passes'
-                        ),
-                        onPressed: () async{
-                          print("gdxgxgxxfdxdfxdx");
-                          var response = await submitQty(currentIntValue, phone, type, token);
-                      
-                          if(response.statusCode == 200){
-                            print('success');
-                          }
-                          else{
-                            print('Please don\'t');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
         );
       }
     );
   }
+
+
+ 
+
+ void confirmBox(qty, phone, type, token){
+   
+   showDialog(
+     context: context,
+     builder: (BuildContext context){
+       return Scaffold(
+         body: Container(
+           child: Container(
+            color: Colors.white,
+            child: Column(
+              children: <Widget>[
+
+                SizedBox(height: 50),
+
+                Text(
+                  'Valid OYW Pass!',
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+
+                SizedBox(height: 50),
+
+                Text(
+                  'Phone number: $phone',
+                  style: TextStyle(
+                    fontSize: 20
+                  ),
+                ),
+
+                SizedBox(height: 50),
+
+                Text(
+                  'Pass type: $type and qty: $qty',
+                  style: TextStyle(
+                    fontSize: 20
+                  ),
+                ),
+
+                SizedBox(height: 50),
+
+
+                StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState){
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: (){
+                            setState((){
+                              if(counter < qty)
+                              counter++;
+                            });
+                          },
+                        ),
+                        Text(
+                          '$counter',
+                          style: TextStyle(
+                            fontSize: 20
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: (){
+                            setState((){
+                              if(counter != 0)
+                              counter--;
+                            });
+                          },
+                        )
+                      ],
+                    );
+                  },
+                ),
+
+                SizedBox(height: 50),
+
+                RaisedButton(
+                  shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.lightBlue)
+                      ),
+                      color: Colors.lightBlue,
+                      onPressed: ()async {
+                        print('Counter: $counter, Type: $type, Phone: $phone, Token: $token');
+                        if(counter != 0){
+                          var response = await submitQty(counter, phone, type, token);
+                          if(response.statusCode == 200){
+                            Navigator.of(context).pop(QR());
+                          }
+                          else{
+                            print('RETRY');
+                          }
+                        }
+                        else{
+                          print('Pass select > 0');
+                        }
+                        
+                        
+                      },
+                      child: Center(
+                        child: Text('Confirm',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20
+                          )
+                        )
+                      )
+                )
+              ]
+            )
+           )
+         )
+       );
+     }
+   );
+ }
+
+ 
+
+
+  
+    
+              
+
 
   void _portraitModeOnly() {
     SystemChrome.setPreferredOrientations([
@@ -212,15 +264,18 @@ class _QRState extends State<QR> {
                   print("Gonna print the status code here now");
                   print(response.statusCode);
                   if(response.statusCode == 200){
+
                     var jsonrresponse = await json.decode(response.body);
                     Map<String, dynamic> data = jsonrresponse['data'];
                     print(data);
                     confirmBox(data['qty'], data['phone'], data['type'], token);
                     
                   }
+                  else{
+                    _invalidQR();
+                  }
                 }
 
-                
               }
             ),
           ],
