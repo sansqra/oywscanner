@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -23,6 +25,7 @@ class _QRState extends State<QR> {
 
   NumberPicker integerNumberPicker;
   int counter = 0;
+  var client = http.Client();
  
   qrScan() async{
     var scannedQr = await FlutterBarcodeScanner.scanBarcode("#ff6666", 'Cancel', true, ScanMode.DEFAULT);
@@ -43,25 +46,44 @@ class _QRState extends State<QR> {
 
   }
 
-  submitQty(type, phone, qty, token) async{
-    await http.post(
-      acceptPass,
-      body: {
-        'type': type,
-        'phone': phone,
-        'qty': qty 
-      },
-      headers: {
-        'token': token
+  void _passRedeemed(){
+    showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('Successful'),
+          content: Text('Pass successfully redeemed. Please tell customer to check Messages'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Done'),
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       }
-    ).then((response){
-        print('Have reached the .then of confirm. Status code:' + (response.statusCode as String));
-        return response;
+    );
+  }
+
+  void _passRedeemedFail(){
+    showDialog(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text('Failed'),
+          content: Text('Pass redemption failed. Please try Scanning again.'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       }
-    ).catchError((ex){
-      print(ex);
-    });
-    
+    );
   }
 
 
@@ -88,14 +110,14 @@ class _QRState extends State<QR> {
   }
 
 
- 
 
  void confirmBox(qty, phone, type, token){
-   
+   counter = 0;
    showDialog(
      context: context,
      builder: (BuildContext context){
        return Scaffold(
+         appBar: AppBar(),
          body: Container(
            child: Container(
             color: Colors.white,
@@ -176,20 +198,36 @@ class _QRState extends State<QR> {
                       color: Colors.lightBlue,
                       onPressed: ()async {
                         print('Counter: $counter, Type: $type, Phone: $phone, Token: $token');
+                        print(counter.runtimeType);
+                        print(acceptPass);
+        
                         if(counter != 0){
-                          var response = await submitQty(counter, phone, type, token);
+                          print('above post now');
+                          var response = await http.post(
+                            acceptPass,
+
+                            body: <String, String>{
+                              'type': type, //string
+                              'phone': phone, //string
+                              'qty': counter.toString() //int. Tried sending as string too, didn't work.
+                            },
+                            headers: {
+                              'token': token //string
+                            }
+                          );
+                          print("something with the response here ");
+                          print(response.statusCode);
+
                           if(response.statusCode == 200){
                             Navigator.of(context).pop(QR());
                           }
                           else{
-                            print('RETRY');
+                            _passRedeemedFail();
                           }
-                        }
-                        else{
-                          print('Pass select > 0');
+                          
                         }
                         
-                        
+
                       },
                       child: Center(
                         child: Text('Confirm',
@@ -208,13 +246,6 @@ class _QRState extends State<QR> {
      }
    );
  }
-
- 
-
-
-  
-    
-              
 
 
   void _portraitModeOnly() {
