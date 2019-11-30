@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
@@ -7,9 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import 'dart:convert';
-import 'package:numberpicker/numberpicker.dart';
-
-
+import './login.dart';
 
 final scanPass = "http://dev-api.orlemyouthweek.in/scan_pass";
 final acceptPass = "http://dev-api.orlemyouthweek.in/accept_pass";
@@ -23,9 +19,15 @@ class QR extends StatefulWidget {
 
 class _QRState extends State<QR> {
 
-  NumberPicker integerNumberPicker;
   int counter = 0;
   var client = http.Client();
+
+  void _portraitModeOnly() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
  
   qrScan() async{
     var scannedQr = await FlutterBarcodeScanner.scanBarcode("#ff6666", 'Cancel', true, ScanMode.DEFAULT);
@@ -46,46 +48,8 @@ class _QRState extends State<QR> {
 
   }
 
-  void _passRedeemed(){
-    showDialog(
-      context: context,
-      builder: (BuildContext context){
-        return AlertDialog(
-          title: Text('Successful'),
-          content: Text('Pass successfully redeemed. Please tell customer to check Messages'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Done'),
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      }
-    );
-  }
 
-  void _passRedeemedFail(){
-    showDialog(
-      context: context,
-      builder: (BuildContext context){
-        return AlertDialog(
-          title: Text('Failed'),
-          content: Text('Pass redemption failed. Please try Scanning again.'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('OK'),
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      }
-    );
-  }
-
+ //pass redeem, pass redeem fail
 
 
   void _invalidQR(){
@@ -160,11 +124,11 @@ class _QRState extends State<QR> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         IconButton(
-                          icon: Icon(Icons.add),
+                          icon: Icon(Icons.remove),
                           onPressed: (){
                             setState((){
-                              if(counter < qty)
-                              counter++;
+                              if(counter != 0)
+                              counter--;
                             });
                           },
                         ),
@@ -175,11 +139,11 @@ class _QRState extends State<QR> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.remove),
+                          icon: Icon(Icons.add),
                           onPressed: (){
                             setState((){
-                              if(counter != 0)
-                              counter--;
+                              if(counter < qty)
+                              counter++;
                             });
                           },
                         )
@@ -222,7 +186,7 @@ class _QRState extends State<QR> {
                             Navigator.of(context).pop(QR());
                           }
                           else{
-                            _passRedeemedFail();
+                            //pass redeem failed
                           }
                           
                         }
@@ -247,71 +211,122 @@ class _QRState extends State<QR> {
    );
  }
 
-
-  void _portraitModeOnly() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  }
-
-  @override
+@override
   Widget build(BuildContext context) {
     _portraitModeOnly();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('OYW 2019'),
-      ),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            SizedBox(height: 90),
-            RaisedButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18.0),
-              ),
-              color: Colors.lightBlue,
-              child: Text(
-                'Scan',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white
-                )
-              ),
-              onPressed: () async{
-                SharedPreferences prefs =  await SharedPreferences.getInstance();
-                var token = prefs.getString('token');
-                print(token);
-
-                var scannedQr = await qrScan(); //stores result
-                print("Gonna print the scanned result after this");
-                print("@@@@@@@@@@@@@@@@@@@@@@@@@@@: => "+scannedQr);
-                if(scannedQr.length < 2){
-                  //invalidQr();
-                }
-                else if(scannedQr.length > 2){
-                  var response = await qrValidity(scannedQr, token);
-                  print("Gonna print the status code here now");
-                  print(response.statusCode);
-                  if(response.statusCode == 200){
-
-                    var jsonrresponse = await json.decode(response.body);
-                    Map<String, dynamic> data = jsonrresponse['data'];
-                    print(data);
-                    confirmBox(data['qty'], data['phone'], data['type'], token);
-                    
-                  }
-                  else{
-                    _invalidQR();
-                  }
-                }
-
-              }
-            ),
-          ],
+    
+    return Stack(
+      children: <Widget>[
+        Image.asset(
+          "assets/login_bck.jpg",
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          fit: BoxFit.cover,
         ),
-      ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+           body: ListView(
+              children: <Widget>[
+                Padding(
+                padding: EdgeInsets.only(top: 15.0, left: 2.0),
+                child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.arrow_back_ios),
+                    color: Colors.red,
+                    onPressed: (){
+                      Navigator.pop(context,
+                        MaterialPageRoute(builder: (context)=>Login(),
+                        )
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+              SizedBox(
+                height: 220.0,
+              ),
+            Container(
+              height: MediaQuery.of(context).size.height - 300.0,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(55.0),
+                    topRight: Radius.circular(55.0)
+                  ),
+                ),
+               child: ListView(
+                  primary: false,
+                  padding: EdgeInsets.only(
+                    left: 45.0,
+                    ),
+                  children: <Widget>[
+                    SizedBox(height: 120.0),
+
+                    FlatButton(
+
+                      child: Row(
+                        children: <Widget>[
+                          SizedBox(width: 100.0),
+                          Icon(Icons.camera_alt,
+                            size: 30,
+                          ),
+
+                          SizedBox(
+                            height: 60.0,
+                            width: 10.0,
+                          ),
+                          Text(
+                            'Scan',
+                            style: TextStyle(
+                              fontSize: 25,
+                              color: Colors.black
+                            ),
+                          ),
+
+                        ],
+                      ),
+
+                      onPressed: () async{
+                        SharedPreferences prefs =  await SharedPreferences.getInstance();
+                          var token = prefs.getString('token');
+                          print(token);
+
+                          var scannedQr = await qrScan(); //stores result
+                          print("Gonna print the scanned result after this");
+                          print("@@@@@@@@@@@@@@@@@@@@@@@@@@@: => "+scannedQr);
+                          if(scannedQr.length < 2){
+                            //invalidQr();
+                          }
+                          else if(scannedQr.length > 2){
+                            var response = await qrValidity(scannedQr, token);
+                            print("Gonna print the status code here now");
+                            print(response.statusCode);
+                            if(response.statusCode == 200){
+
+                              var jsonrresponse = await json.decode(response.body);
+                              Map<String, dynamic> data = jsonrresponse['data'];
+                              print(data);
+                              confirmBox(data['qty'], data['phone'], data['type'], token);
+                              
+                            }
+                              else{
+                                _invalidQR();
+                              }
+                            }
+                      },
+                    )
+
+                  ],
+            ),),
+              ]
+        ),
+        )
+      
+      ]
     );
   }
 }
+    
