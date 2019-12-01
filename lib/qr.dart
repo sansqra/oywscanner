@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'dart:convert';
 import './login.dart';
@@ -21,6 +22,20 @@ class _QRState extends State<QR> {
 
   int counter = 0;
   var client = http.Client();
+
+  @override
+  void initState(){
+    super.initState();
+    var android = AndroidInitializationSettings('ic_launcher');
+    var iOS = IOSInitializationSettings();
+    var initSettings = InitializationSettings(android, iOS);
+    FlutterLocalNotificationsPlugin().initialize(initSettings, onSelectNotification: onSelectNotification);
+  }
+
+  Future<void> onSelectNotification(String payload) async{
+   print('Payload nonsense');
+  }
+
 
   void _portraitModeOnly() {
     SystemChrome.setPreferredOrientations([
@@ -73,6 +88,21 @@ class _QRState extends State<QR> {
     );
   }
 
+  showNotificationS() async{
+    var android = AndroidNotificationDetails('channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+    importance: Importance.Max, priority: Priority.High);
+    var iOS = IOSNotificationDetails();
+    var platform = NotificationDetails(android, iOS);
+    await FlutterLocalNotificationsPlugin().show(0, 'Pass Redeemed', 'SUCCESSFUL', platform);
+  }
+
+  showNotificationF() async{
+    var android = AndroidNotificationDetails('channel id', 'channel NAME', 'CHANNEL DESCRIPTION',
+    importance: Importance.Max, priority: Priority.High);
+    var iOS = IOSNotificationDetails();
+    var platform = NotificationDetails(android, iOS);
+    await FlutterLocalNotificationsPlugin().show(0, 'Pass Redemption', 'FAILED. Try again', platform);
+  }
 
 
  void confirmBox(qty, phone, type, token){
@@ -183,15 +213,18 @@ class _QRState extends State<QR> {
                           print(response.statusCode);
 
                           if(response.statusCode == 200){
+                            
+                            showNotificationS();
                             Navigator.of(context).pop(QR());
+                            
                           }
                           else{
                             //pass redeem failed
+                            showNotificationF();
+                            Navigator.of(context).pop(QR());
                           }
                           
                         }
-                        
-
                       },
                       child: Center(
                         child: Text('Confirm',
@@ -263,68 +296,60 @@ class _QRState extends State<QR> {
                     left: 45.0,
                     ),
                   children: <Widget>[
-                    SizedBox(height: 120.0),
-
+                    SizedBox(height: 120,),
                     FlatButton(
-
+           
+                      color: Colors.transparent,
                       child: Row(
                         children: <Widget>[
-                          SizedBox(width: 100.0),
-                          Icon(Icons.camera_alt,
-                            size: 30,
-                          ),
-
-                          SizedBox(
-                            height: 60.0,
-                            width: 10.0,
-                          ),
+                        
+                          SizedBox(width: 110,),
                           Text(
-                            'Scan',
-                            style: TextStyle(
-                              fontSize: 25,
-                              color: Colors.black
-                            ),
-                          ),
-
-                        ],
+                        'Scan',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: Colors.pink[200]
+                        )
                       ),
-
+                        ]
+                        ,),
                       onPressed: () async{
                         SharedPreferences prefs =  await SharedPreferences.getInstance();
-                          var token = prefs.getString('token');
-                          print(token);
+                        var token = prefs.getString('token');
+                        print(token);
 
-                          var scannedQr = await qrScan(); //stores result
-                          print("Gonna print the scanned result after this");
-                          print("@@@@@@@@@@@@@@@@@@@@@@@@@@@: => "+scannedQr);
-                          if(scannedQr.length < 2){
-                            //invalidQr();
+                        var scannedQr = await qrScan(); //stores result
+                        print("Gonna print the scanned result after this");
+                        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@: => "+scannedQr);
+                        if(scannedQr.length < 2){
+                          //invalidQr();
+                        }
+                        else if(scannedQr.length > 2){
+                          var response = await qrValidity(scannedQr, token);
+                          print("Gonna print the status code here now");
+                          print(response.statusCode);
+                          if(response.statusCode == 200){
+
+                            var jsonrresponse = await json.decode(response.body);
+                            Map<String, dynamic> data = jsonrresponse['data'];
+                            print(data);
+                            confirmBox(data['qty'], data['phone'], data['type'], token);
+                            
+                            
                           }
-                          else if(scannedQr.length > 2){
-                            var response = await qrValidity(scannedQr, token);
-                            print("Gonna print the status code here now");
-                            print(response.statusCode);
-                            if(response.statusCode == 200){
-
-                              var jsonrresponse = await json.decode(response.body);
-                              Map<String, dynamic> data = jsonrresponse['data'];
-                              print(data);
-                              confirmBox(data['qty'], data['phone'], data['type'], token);
-                              
-                            }
-                              else{
-                                _invalidQR();
-                              }
-                            }
-                      },
-                    )
+                          else{
+                            _invalidQR();
+                          }
+                        }
+                      }
+                    ),
 
                   ],
-            ),),
-              ]
-        ),
+                ),
+              )
+            ]
+          ),
         )
-      
       ]
     );
   }

@@ -26,6 +26,7 @@ dependencies:
   http:
   shared_preferences:
   flutter_barcode_scanner:  ^0.1.7
+  flutter_local_notifications: ^0.8.4+3
 
 dev_dependencies:
   flutter_test:

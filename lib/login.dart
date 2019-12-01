@@ -76,18 +76,15 @@ class _LoginState extends State<Login> {
         ),
         Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0.0,
-          ),
+          
           body: ListView(
             children: <Widget>[
               SizedBox(
-                height: 195.0,
+                height: 300.0,
               ),
               //Container for login input widgets
               Container(
-                height: MediaQuery.of(context).size.height - 200.0,
+                height: MediaQuery.of(context).size.height - 280.0,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -107,7 +104,7 @@ class _LoginState extends State<Login> {
                         child: ListView(
                           children: <Widget>[
                             SizedBox(
-                              height: 20.0,
+                              height: 40.0,
                             ),
                             TextField(
                               controller: username,
