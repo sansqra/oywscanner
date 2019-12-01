@@ -17,7 +17,7 @@ class _LoginState extends State<Login> {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
 
-  final baseLog = "http://stag-api.orlemyouthweek.in/login";
+  final baseLog = "https://api.orlemyouthweek.in/login";
 
   void _portraitModeOnly() {
     SystemChrome.setPreferredOrientations([
