@@ -8,8 +8,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:convert';
 import './login.dart';
 
-final scanPass = "http://dev-api.orlemyouthweek.in/scan_pass";
-final acceptPass = "http://dev-api.orlemyouthweek.in/accept_pass";
+final scanPass = "http://stag-api.orlemyouthweek.in/scan_pass";
+final acceptPass = "http://stag-api.orlemyouthweek.in/accept_pass";
 
 
 class QR extends StatefulWidget {
