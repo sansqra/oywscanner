@@ -9,7 +9,7 @@ import 'dart:convert';
 import './login.dart';
 
 final scanPass = "https://api.orlemyouthweek.in/scan_pass";
-final acceptPass = "https://api.orlemyouthweek.in/accept_pass";
+final acceptPass = "https://someurl";
 
 
 class QR extends StatefulWidget {
