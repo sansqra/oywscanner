@@ -1,4 +1,4 @@
-# Final OYW Scanner
+# OYW Scanner Final
 
 One of my first live projects along with a framework that was barely used.
 
@@ -9,4 +9,4 @@ It's not written in industry standards because I was a noob in Flutter then, but
 
 You can check the ticket issuing system code over at my friend's repository. Written in Flask and React.js:
 
-https://github.com/keane3pereira/oyw_api_flask
+<a href="https://github.com/keane3pereira/oyw_api_flask"> Flask & React.js QR ticket generator</a>
