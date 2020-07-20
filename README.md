@@ -12,5 +12,5 @@ You can check the ticket issuing system code over at my friend's repository. Wri
 <a href="https://github.com/keane3pereira/oyw_api_flask"> Flask & React.js QR ticket generator</a>
 
 You can also check out the rest of the team:
-<a href="https://github.com/clydemendonca">Clyde Mendonca 😎 </a>
+<a href="https://github.com/clydemendonca">Clyde Mendonca 😎 </a>, &nbsp;
 <a href="https://github.com/keane3pereira">Keane Pereira 👓 </a>
