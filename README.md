@@ -1,5 +1,7 @@
 # OYW QRScanner (Final)
 
+![QR_Code Gif](https://media1.tenor.com/images/4837d0dcb534069baa300e896705d817/tenor.gif
+
 One of my first live projects along with a framework that was barely used. 🤓
 
 OYW is an event that happens at Our Lady of Lourdes Church, and it decided to go paperless. The ticketing system went digital,
