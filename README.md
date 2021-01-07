@@ -1,6 +1,6 @@
 # OYW QRScanner (Final)
 
-![QR_Code Gif](https://media1.tenor.com/images/4837d0dcb534069baa300e896705d817/tenor.gif
+<img align="center" src="https://media1.tenor.com/images/4837d0dcb534069baa300e896705d817/tenor.gif" width="200px"/>
 
 One of my first live projects along with a framework that was barely used. 🤓
 
